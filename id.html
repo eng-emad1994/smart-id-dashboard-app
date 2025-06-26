@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحقق من هوية الموظف</title>
+    <!-- استدعاء الأيقونات والتنسيق -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        /* ======== تصميم صفحة الهوية الآمنة ======== */
+        :root {
+            --primary-color: #007bff; --bg-color: #f4f7f9;
+            --card-bg-color: #ffffff; --text-color: #2c3e50; --text-light: #7f8c8d;
+            --success-color: #28a745; --danger-color: #dc3545;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .id-card {
+            background-color: var(--card-bg-color);
+            border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 480px; width: 100%; animation: fadeIn 0.5s ease-out;
+            border-top: 5px solid var(--primary-color);
+        }
+        .id-header { text-align: center; padding: 20px; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; }
+        .id-header h3 { margin: 0; font-size: 20px; font-weight: 800; color: var(--primary-color); }
+        .id-header p { margin: 5px 0 0; color: var(--text-light); }
+        .id-body { padding: 30px; text-align: center; }
+        #loader { font-size: 20px; padding: 40px; text-align: center; color: var(--text-light); }
+        #employee-details { display: none; }
+        .employee-photo { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid var(--card-bg-color); box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-top: -95px; }
+        .employee-name { font-size: 28px; font-weight: 800; color: var(--text-color); margin: 15px 0 5px; }
+        .employee-title { font-size: 18px; color: var(--primary-color); margin-bottom: 30px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: right; }
+        .info-item { background-color: #f8f9fa; padding: 15px; border-radius: 8px; }
+        .info-label { font-size: 14px; color: var(--text-light); margin-bottom: 5px; display: block; }
+        .info-value { font-size: 16px; font-weight: 700; }
+        .full-width { grid-column: 1 / -1; }
+        #status-banner { margin-top: 20px; padding: 12px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        #status-banner.valid { background-color: #eaf7f0; color: var(--success-color); border: 1px solid #a3e9d7; }
+        #status-banner.expired { background-color: #fbecec; color: var(--danger-color); border: 1px solid #f5b7b1; }
+    </style>
+</head>
+<body>
+    <div class="id-card">
+        <div id="loader">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>جاري التحقق من الهوية...</p>
+        </div>
+
+        <div id="employee-details">
+            <div class="id-header">
+                <h3>مشروع التحول الذكي بالشبكة الكهربائية</h3>
+                <p>مدينة الكوت</p>
+            </div>
+            <div class="id-body">
+                <img id="employee-photo" class="employee-photo" src="">
+                <h1 id="employee-name" class="employee-name"></h1>
+                <p id="employee-job-title" class="employee-title"></p>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">الرقم الوظيفي</span>
+                        <span id="employee-id" class="info-value"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">القسم</span>
+                        <span id="employee-department" class="info-value"></span>
+                    </div>
+                    <div class="info-item full-width" id="expiry-date-container" style="display: none;">
+                        <span class="info-label">تاريخ نفاذ الهوية</span>
+                        <span id="employee-expiry" class="info-value"></span>
+                    </div>
+                </div>
+                <div id="status-banner"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // --- تهيئة الاتصال بـ Supabase ---
+        const SUPABASE_URL = "https://fcqmxsghjzytwewnylye.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcW14c2doanp5dHdld255bHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0ODY5OTcsImV4cCI6MjA2NjA2Mjk5N30.m_2k_35IIz992fb-djoI_0w-ltvUhFOeyB_vyFV-Ui8";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const loader = document.getElementById('loader');
+        const detailsContainer = document.getElementById('employee-details');
+
+        // --- وظيفة جلب وعرض بيانات الموظف ---
+        const loadEmployeeData = async () => {
+            const params = new URLSearchParams(window.location.search);
+            const employeeId = params.get('emp_id');
+
+            if (!employeeId) {
+                loader.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i><p>خطأ: الرابط غير صالح.</p>';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('employees')
+                    .select(`*, departments ( name )`)
+                    .eq('employee_id', employeeId)
+                    .single();
+
+                if (error || !data) throw new Error("هذا الموظف غير مسجل في قاعدة البيانات.");
+
+                // ملء البيانات
+                document.getElementById('employee-photo').src = data.photo_url || 'https://via.placeholder.com/150';
+                document.getElementById('employee-name').textContent = data.full_name;
+                document.getElementById('employee-job-title').textContent = data.job_title;
+                document.getElementById('employee-id').textContent = data.employee_id;
+                document.getElementById('employee-department').textContent = data.departments ? data.departments.name : 'غير محدد';
+                document.title = `هوية الموظف - ${data.full_name}`;
+                
+                const statusBanner = document.getElementById('status-banner');
+                if(data.expiry_date) {
+                    const expiryDate = new Date(data.expiry_date);
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+
+                    document.getElementById('employee-expiry').textContent = data.expiry_date;
+                    document.getElementById('expiry-date-container').style.display = 'block';
+
+                    if (expiryDate < today) {
+                        statusBanner.innerHTML = `<i class="fas fa-times-circle"></i> الهوية منتهية الصلاحية`;
+                        statusBanner.className = 'expired';
+                    } else {
+                        statusBanner.innerHTML = `<i class="fas fa-check-circle"></i> الهوية سارية المفعول`;
+                        statusBanner.className = 'valid';
+                    }
+                } else {
+                    statusBanner.innerHTML = `<i class="fas fa-check-circle"></i> الهوية سارية المفعول`;
+                    statusBanner.className = 'valid';
+                }
+
+                loader.style.display = 'none';
+                detailsContainer.style.display = 'block';
+
+            } catch (error) {
+                console.error("Error:", error);
+                loader.innerHTML = `<i class="fas fa-times-circle" style="color:#e74c3c;"></i><p>${error.message}</p>`;
+            }
+        };
+
+        window.onload = loadEmployeeData;
+    </script>
+</body>
+</html>

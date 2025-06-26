@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - مشروع التحول الذكي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <h1><i class="fas fa-bolt"></i> لوحة التحكم</h1>
+            <button id="theme-switcher" title="تبديل الثيم"><i class="fas fa-moon"></i></button>
+        </div>
+        <div class="navbar-right">
+            <button id="logout-button"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+        </div>
+    </nav>
+    <div class="main-container">
+        <div class="page-header">
+            <h1>مشروع <span>التحول الذكي</span><br>بالشبكة الكهربائية لمدينة الكوت</h1>
+        </div>
+        <div id="dashboard-grid" class="dashboard-grid">
+            <div id="card-departments" class="dashboard-card">
+                <div class="icon"><i class="fas fa-sitemap"></i></div>
+                <h3 class="dashboard-card-title">إدارة الأقسام</h3>
+                <p class="dashboard-card-value" id="departments-count">...</p>
+            </div>
+            <div id="card-employees" class="dashboard-card">
+                <div class="icon"><i class="fas fa-users"></i></div>
+                <h3 class="dashboard-card-title">عرض الموظفين</h3>
+                <p class="dashboard-card-value" id="employees-count">...</p>
+            </div>
+            <div id="card-add-employee" class="dashboard-card">
+                <div class="icon"><i class="fas fa-user-plus"></i></div>
+                <h3 class="dashboard-card-title">إضافة موظف جديد</h3>
+                <p class="dashboard-card-value" style="font-size:24px;">+</p>
+            </div>
+            <div id="card-export" class="dashboard-card">
+                <div class="icon"><i class="fas fa-file-excel"></i></div>
+                <h3 class="dashboard-card-title">تصدير Excel</h3>
+                <p class="dashboard-card-value" style="font-size:24px;"><i class="fas fa-download"></i></p>
+            </div>
+        </div>
+         <div class="card" style="margin-top:40px; border-top: 4px solid var(--danger-color);">
+            <h2 style="color:var(--danger-color);"><i class="fas fa-exclamation-triangle"></i> منطقة الخطر</h2>
+            <p style="color:var(--text-light)">هذا الإجراء سيحذف جميع بيانات الموظفين والأقسام نهائياً ولا يمكن التراجع عنه.</p>
+            <button id="reset-data-btn" style="width:100%; background:var(--danger-color); border:none; color:white; padding:12px; font-weight:700; font-family:'Tajawal',sans-serif; border-radius:6px; cursor:pointer;">تصفير كل بيانات المشروع</button>
+        </div>
+    </div>
+    <div class="credits"><p>برمجة وتصميم: م. عماد علي العتابي</p></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+const SUPABASE_URL = "https://fcqmxsghjzytwewnylye.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcW14c2doanp5dHdld255bHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0ODY5OTcsImV4cCI6MjA2NjA2Mjk5N30.m_2k_35IIz992fb-djoI_0w-ltvUhFOeyB_vyFV-Ui8";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let departmentsChart = null;
+
+        async function loadStats() {
+            const { count: deptCount } = await supabase.from('departments').select('*', { count: 'exact', head: true });
+            const { count: empCount } = await supabase.from('employees').select('*', { count: 'exact', head: true });
+            document.getElementById('departments-count').textContent = deptCount ?? 0;
+            document.getElementById('employees-count').textContent = empCount ?? 0;
+        }
+        
+        window.viewDepartment = id => window.location.href = `department.html?id=${id}`;
+
+        window.deleteDepartment = async (id) => {
+            const { isConfirmed } = await Swal.fire({ title: "هل أنت متأكد؟", text: "سيتم حذف القسم!", icon: "warning", showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: "نعم، احذفه", cancelButtonText: "إلغاء" });
+            if(isConfirmed) {
+                const { error } = await supabase.from('departments').delete().eq('id', id);
+                if (error) { Swal.fire('خطأ!', 'لا يمكن حذف قسم يحتوي على موظفين. تأكد من نقل الموظفين إلى قسم آخر أو حذفهم أولاً.', 'error'); } 
+                else { Swal.close(); await loadStats(); await manageDepartments(); }
+            }
+        };
+
+        async function manageDepartments() {
+            const { data, error } = await supabase.from('departments').select('*, employees(count)').order('name');
+            if(error) return Swal.fire('خطأ!', error.message, 'error');
+            
+            let departmentHtml = data.map(dept => 
+                `<div class="swal-department-item" onclick="viewDepartment(${dept.id})">
+                    <span>${dept.name} (${dept.employees[0]?.count || 0} موظف)</span>
+                    <button onclick="event.stopPropagation(); deleteDepartment(${dept.id})" class="swal-delete-btn" title="حذف القسم">×</button>
+                </div>`).join('');
+            
+            const { value: newDeptName } = await Swal.fire({
+                title: 'إدارة الأقسام', width: 600,
+                html: `<div><canvas id="departmentsChart" style="max-height: 250px; margin-bottom: 20px;"></canvas></div>
+                       <hr style="margin:20px 0; border-color: var(--border-color);">
+                       <div class="swal-department-list">${departmentHtml || 'لا توجد أقسام مضافة بعد.'}</div>
+                       <input id="swal-input-dept" class="swal2-input" placeholder="اكتب اسم القسم الجديد هنا...">`,
+                showConfirmButton: true, confirmButtonText: 'إضافة قسم',
+                showCancelButton: true, cancelButtonText: 'إغلاق',
+                didOpen: () => {
+                    const ctx = document.getElementById('departmentsChart').getContext('2d');
+                    if (departmentsChart) departmentsChart.destroy();
+                    departmentsChart = new Chart(ctx, {
+                        type: 'bar', data: { labels: data.map(d => d.name), datasets: [{ label: 'عدد الموظفين', data: data.map(d => d.employees[0].count), backgroundColor: 'rgba(52, 152, 219, 0.7)' }] },
+                        options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                    });
+                },
+                preConfirm: () => document.getElementById('swal-input-dept').value
+            });
+
+            if (newDeptName && newDeptName.trim()) {
+                await supabase.from('departments').insert([{ name: newDeptName }]).then(async ({error}) => {
+                    if (error) Swal.fire('خطأ!', error.message, 'error'); 
+                    else { await loadStats(); await manageDepartments(); }
+                });
+            }
+        }
+        
+        async function addEmployee() {
+            const { data: depts } = await supabase.from('departments').select('id, name');
+            if (!depts || depts.length === 0) return Swal.fire('تنبيه!', 'يجب إضافة قسم واحد على الأقل قبل إضافة الموظفين.', 'warning');
+            const deptOptions = depts.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+            
+            const { value: formValues } = await Swal.fire({
+                title: 'إضافة موظف جديد',
+                html: `
+                    <input id="f1" class="swal2-input" placeholder="الاسم الكامل" required>
+                    <input id="f2" class="swal2-input" placeholder="المسمى الوظيفي" required>
+                    <input id="f3" class="swal2-input" placeholder="الرقم الوظيفي">
+                    <select id="f4" class="swal2-select" required><option value="">--اختر القسم--</option>${deptOptions}</select>
+                    <input id="f5" type="date" class="swal2-input" placeholder="تاريخ النفاذ">
+                    <input id="f6" type="file" class="swal2-file" accept="image/*">`,
+                focusConfirm: false, confirmButtonText: 'إضافة الموظف <i class="fas fa-plus" style="margin-right:5px"></i>',
+                showCancelButton: true, cancelButtonText: 'إلغاء',
+                preConfirm: () => {
+                    if (!document.getElementById('f1').value || !document.getElementById('f2').value || !document.getElementById('f4').value) {
+                        Swal.showValidationMessage('الاسم، الوظيفة، والقسم حقول مطلوبة.');
+                        return false;
+                    }
+                    return { 
+                        name: f1.value, 
+                        title: f2.value, 
+                        employee_id: f3.value, // تم التصحيح هنا
+                        department_id: f4.value, 
+                        expiry: f5.value, 
+                        file: f6.files[0] 
+                    };
+                }
+            });
+
+            if (formValues) {
+                Swal.showLoading();
+                try {
+                    let photo_url = null;
+                    if (formValues.file) {
+                        const {data, error: uploadError} = await supabase.storage.from('employee-photos').upload(`${Date.now()}-${formValues.file.name}`, formValues.file);
+                        if(uploadError) throw uploadError;
+                        photo_url = supabase.storage.from('employee-photos').getPublicUrl(data.path).data.publicUrl;
+                    }
+                    delete formValues.file;
+                    
+                    const { error } = await supabase.from('employees').insert([{
+                        full_name: formValues.name, 
+                        job_title: formValues.title, 
+                        employee_id: formValues.employee_id, // تم التصحيح هنا
+                        department_id: formValues.department_id, 
+                        expiry_date: formValues.expiry || null, 
+                        photo_url: photo_url
+                    }]);
+
+                    if (error) throw error;
+                    Swal.fire('تم!', 'أضيف الموظف بنجاح.', 'success').then(loadStats);
+                } catch (error) { Swal.fire('خطأ!', error.message, 'error'); }
+            }
+        }
+        
+        async function exportExcel() {
+             const { data, error } = await supabase.from('employees').select(`full_name, job_title, employee_id, expiry_date, departments(name)`);
+             if (error || !data || data.length === 0) return Swal.fire('فارغ!', 'لا توجد بيانات موظفين حالياً لتصديرها.', 'info');
+             const dataToExport = data.map(e => ({ 'الاسم الكامل': e.full_name, 'المسمى الوظيفي': e.job_title, 'القسم': e.departments ? e.departments.name : '-', 'الرقم الوظيفي': e.employee_id, 'صلاحية الهوية': e.expiry_date }));
+             const ws = XLSX.utils.json_to_sheet(dataToExport); const wb = XLSX.utils.book_new();
+             XLSX.utils.book_append_sheet(wb, ws, "الموظفون"); XLSX.writeFile(wb, `Employees_Backup_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        async function resetAllData() {
+            const { value: password } = await Swal.fire({ title: 'تأكيد عملية الحذف النهائي!', input: 'password', inputLabel: 'هذا الإجراء لا يمكن التراجع عنه. أدخل كلمة المرور للتأكيد:', inputPlaceholder: 'كلمة المرور...', showCancelButton: true, confirmButtonText: 'تأكيد الحذف', confirmButtonColor: '#d33' });
+            if (password === 'Information_Master_Emad') {
+                Swal.fire({ title: 'جاري الحذف...', text: 'قد تستغرق هذه العملية بعض الوقت...', didOpen: () => Swal.showLoading() });
+                try {
+                    await supabase.rpc('dangerously_reset_all_data');
+                    const { data: files } = await supabase.storage.from('employee-photos').list();
+                    if(files && files.length > 0) await supabase.storage.from('employee-photos').remove(files.map(f => f.name));
+                    Swal.fire('تم!', 'تم تصفير كل بيانات المشروع بنجاح.', 'success').then(() => window.location.reload());
+                } catch(error) { Swal.fire('خطأ فادح!', error.message, 'error'); }
+            } else if (password) { Swal.fire('خطأ!', 'كلمة المرور غير صحيحة.', 'error'); }
+        }
+
+        // --- تشغيل التطبيق وربط الأحداث ---
+        function setupEventListeners() {
+            document.getElementById('card-departments').addEventListener('click', manageDepartments);
+            document.getElementById('card-employees').addEventListener('click', () => window.location.href = 'employees.html');
+            document.getElementById('card-add-employee').addEventListener('click', addEmployee);
+            document.getElementById('card-export').addEventListener('click', exportExcel);
+            document.getElementById('reset-data-btn').addEventListener('click', resetAllData);
+            document.getElementById('logout-button').addEventListener('click', async () => { await supabase.auth.signOut(); window.location.href = 'index.html'; });
+            const themeSwitcher = document.getElementById('theme-switcher');
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            themeSwitcher.innerHTML = `<i class="fas ${currentTheme === 'dark' ? 'fa-sun' : 'fa-moon'}"></i>`;
+            themeSwitcher.addEventListener('click', () => {
+                let theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme);
+                themeSwitcher.innerHTML = `<i class="fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}"></i>`;
+            });
+        }
+        (async () => { const { data: { session } } = await supabase.auth.getSession(); if (session) { loadStats(); setupEventListeners(); } else { window.location.href = 'index.html'; } })();
+    </script>
+</body>
+</html>

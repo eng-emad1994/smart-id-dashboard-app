@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>هوية تحقق الموظف</title>
+    
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    
+    <style>
+        /* ======== تصميم الهوية بأسلوب المشروع الأول (مع الشرارات وعلم العراق) ======== */
+        :root {
+            --spark-color: #ffcc00; /* لون الشرارة الصفراء */
+            --primary-accent-color: #0056b3; /* لون أزرق كلون مميز */
+            --text-color: #ecf0f1;
+            --text-color-muted: #95a5a6;
+            --card-bg: linear-gradient(145deg, #2c3e50, #1a2533); /* خلفية البطاقة المتدرجة */
+            --body-bg: #1c2025; /* خلفية الصفحة */
+            /* ألوان علم العراق الرسمية */
+            --iraq-red: #ce1126;
+            --iraq-white: #ffffff;
+            --iraq-black: #000000;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+        }
+
+        /* ===== أنيميشن الشرارات المتطايرة ===== */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px 0px rgba(93, 173, 226, 0.4); }
+            50% { box-shadow: 0 0 25px 8px rgba(93, 173, 226, 0.2); }
+            100% { box-shadow: 0 0 10px 0px rgba(93, 173, 226, 0.4); }
+        }
+        @keyframes rotate-border {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--body-bg);
+            margin: 0; padding: 20px;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+        }
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            max-width: 480px; width: 100%;
+            overflow: hidden;
+            border-top: 2px solid rgba(52, 152, 219, 0.5);
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .card-header { padding: 30px 25px; text-align: center; }
+        .logos-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .logos-container .side-logo { max-height: 90px; max-width: 150px; object-fit: contain; }
+        .logos-container .center-gif { max-height: 110px; object-fit: contain; }
+        .header-text h4 { font-size: 1em; font-weight: 400; color: var(--text-color-muted); margin: 4px 0; }
+        .header-text h3 { font-size: 1.1em; font-weight: 500; color: var(--text-color); margin: 4px 0; }
+        .header-text h2 { font-size: 1.3em; font-weight: 700; color: #fff; margin: 4px 0; }
+
+        .card-body { padding: 0 30px 30px; text-align: center; }
+        #loader { font-size: 20px; padding: 40px; text-align: center; color: var(--text-color-muted); }
+        #employee-details { display: none; } /* مخفي حتى يتم تحميل البيانات */
+        .employee-name { font-size: 2.3em; font-weight: 800; color: #fff; margin: 20px 0 8px 0; text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .employee-job-title { font-size: 1.3em; color: var(--primary-accent-color); font-weight: 700; margin-bottom: 30px; }
+        
+        /* ===== حاوية الصورة وتأثير الشرارات ===== */
+        .employee-photo-wrapper {
+            position: relative; width: 170px; height: 170px; margin: 0 auto 20px;
+            border-radius: 50%; padding: 5px;
+            animation: pulse-glow 3s infinite ease-in-out;
+            background: linear-gradient(to bottom, 
+                var(--iraq-red) 33.3%, 
+                var(--iraq-white) 33.3%, 
+                var(--iraq-white) 66.6%, 
+                var(--iraq-black) 66.6%
+            );
+        }
+        .employee-photo-wrapper::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            background: conic-gradient(from 180deg, transparent 60%, var(--spark-color), transparent);
+            animation: rotate-border 2.5s infinite linear;
+            mask-image: radial-gradient(circle at center, transparent 94%, black 95%);
+            -webkit-mask-image: radial-gradient(circle at center, transparent 94%, black 95%);
+        }
+        .employee-photo {
+            width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+            border: 3px solid var(--body-bg);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+        }
+
+        .info-section { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 35px 0; }
+        .info-item {
+            background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 20px; border-radius: 12px; font-size: 1.1em; font-weight: 400;
+            display: flex; align-items: center; width: 90%; justify-content: space-between;
+        }
+        .info-item i { color: var(--primary-accent-color); margin-left: 10px; font-size: 1.2em; width: 25px; }
+        .info-item span, .info-item strong { color: var(--text-color); }
+        .info-item strong { font-weight: 700; }
+        
+        .auth-section { text-align: center; padding: 25px; background-color: rgba(255, 255, 255, 0.03); border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
+        .auth-section h3 { margin: 0 0 10px 0; font-size: 1.2em; color: var(--primary-accent-color); font-weight: 700; }
+        .auth-section p { margin: 0; font-size: 1.05em; line-height: 1.8; color: var(--text-color); font-weight: 400; }
+        
+        .signatures { display: flex; justify-content: space-around; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 25px; margin-bottom: 25px; }
+        .signature-block img { max-height: 50px; max-width: 110px; object-fit: contain; margin-bottom: 8px; filter: brightness(0) invert(1); }
+        .signature-block p { font-size: 0.9em; font-weight: 700; color: var(--text-color-muted); }
+
+        .card-footer { padding: 0 30px 30px; text-align: center; }
+        .contact-info { margin-bottom: 15px; }
+        .contact-info a { color: var(--text-color-muted); text-decoration: none; margin: 0 10px; font-weight: 700; font-size: 0.9em; }
+        
+        .verification-notice { margin-bottom: 15px; }
+        .verification-notice p { margin: 0; font-size: 0.95em; color: var(--text-color); line-height: 1.7; }
+        .verification-notice b { color: #fff; font-weight: 700; }
+        
+        .credits { font-size: 0.85em; color: rgba(255, 255, 255, 0.4); }
+        .credits p { margin: 0; }
+
+        /* حالة الهوية (صالح/منتهي) */
+        #status-banner { margin-top: 20px; padding: 12px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        #status-banner.valid { background-color: #eaf7f0; color: var(--success-color); border: 1px solid #a3e9d7; }
+        #status-banner.expired { background-color: #fbecec; color: var(--danger-color); border: 1px solid #f5b7b1; }
+    </style>
+</head>
+<body>
+
+    <div class="profile-card">
+        <header class="card-header">
+            <div class="logos-container">
+                <img src="co.png" class="side-logo" alt="شعار شركة كهرباء الوسط">
+                <img src="Iraq.gif" class="center-gif" alt="Animation">
+                <img src="min.png" class="side-logo" alt="شعار وزارة الكهرباء">
+            </div>
+            <div class="header-text">
+                <h4>جمهورية العراق - وزارة الكهرباء</h4>
+                <h3>الشركة العامة لتوزيع كهرباء الوسط</h3>
+                <h2>مشروع التحول الذكي بالشبكة الكهربائية لمدينة الكوت</h2>
+            </div>
+        </header>
+
+        <main class="card-body">
+            <div id="loader">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>جاري التحقق من الهوية...</p>
+            </div>
+
+            <div id="employee-details">
+                <div class="employee-photo-wrapper">
+                    <img id="employee-photo" class="employee-photo" src="" alt="صورة الموظف">
+                </div>
+                <h1 id="employee-name" class="employee-name"></h1>
+                <p id="employee-job-title" class="employee-job-title"></p>
+                
+                <div class="info-section">
+                    <div class="info-item">
+                        <i class="fa-solid fa-id-card-clip"></i>
+                        <span>الرقم الوظيفي: <strong id="employee-id"></strong></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-building-user"></i>
+                        <span>القسم: <strong id="employee-department"></strong></span>
+                    </div>
+                    <div class="info-item" id="expiry-date-item">
+                        <i class="fa-solid fa-calendar-xmark"></i>
+                        <span>تاريخ نفاذ الهوية: <strong id="employee-expiry"></strong></span>
+                    </div>
+                </div>
+
+                <div class="auth-section">
+                    <h3>تخويل رسمي</h3>
+                    <p>بموجب هذا، نؤكد أن حامل الهوية مخول من قبل <strong>شركة توزيع كهرباء الوسط - دائرة المهندس المقيم</strong>، ونرجو من كافة الجهات المعنية تسهيل جميع الأمور المتعلقة بإنجاز مهام عمله.</p>
+                </div>
+                
+                <div class="signatures">
+                    <div class="signature-block">
+                        <img src="admin.png" alt="توقيع المدير">
+                        <p>مدير الشركة</p>
+                    </div>
+                    <div class="signature-block">
+                        <img src="eng.png" alt="توقيع المهندس المقيم">
+                        <p>دائرة المهندس المقيم</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="card-footer">
+            <p class="contact-info">📞 أرقام الاتصال: [07734037190]</p>
+            <p class="contact-info">📧 البريد الإلكتروني: <a href="mailto:[emada3170@gmail.com  ]">[emada3170@gmail.com  ]</a></p>
+            <div class="verification-notice">
+                <p>
+                    <i class="fa-solid fa-circle-check" style="color: var(--success-color);"></i>
+                    هذه الهوية الرقمية موثقة ومعتمدة ضمن سجلات:<br>
+                    <b>شركة قلعة الطارق - مشروع التحول الذكي بالشبكة الكهربائية لمدينة الكوت</b>
+                </p>
+            </div>
+            <div class="credits">برمجة وتصميم: م. عماد علي العتابي</div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // --- تهيئة الاتصال بـ Supabase (مع بياناتك الصحيحة) ---
+        const SUPABASE_URL = "https://fcqmxsghjzytwewnylye.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcW14c2doanp5dHdld255bHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0ODY5OTcsImV4cCI6MjA2NjA2Mjk5N30.m_2k_35IIz992fb-djoI_0w-ltvUhFOeyB_vyFV-Ui8";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const loader = document.getElementById('loader');
+        const detailsContainer = document.getElementById('employee-details');
+
+        // --- وظيفة جلب وعرض بيانات الموظف ---
+        const loadEmployeeData = async () => {
+            const params = new URLSearchParams(window.location.search);
+            const employeeId = params.get('emp_id');
+
+            if (!employeeId) {
+                loader.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i><p>خطأ: الرابط غير صالح أو لا يحتوي على معرف الموظف.</p>';
+                return;
+            }
+
+            try {
+                // البحث في قاعدة البيانات عن الموظف باستخدام الرقم الوظيفي
+                const { data, error } = await supabase
+                    .from('employees')
+                    .select(`*, departments ( name )`)
+                    .eq('employee_id', employeeId)
+                    .single();
+
+                if (error || !data) {
+                    throw new Error("هذا الموظف غير مسجل في قاعدة البيانات.");
+                }
+
+                // ملء البيانات
+                document.getElementById('employee-photo').src = data.photo_url || 'https://via.placeholder.com/150';
+                document.getElementById('employee-name').textContent = data.full_name;
+                document.getElementById('employee-job-title').textContent = data.job_title;
+                document.getElementById('employee-id').textContent = data.employee_id;
+                document.getElementById('employee-department').textContent = data.departments ? data.departments.name : 'غير محدد';
+                document.title = `هوية الموظف - ${data.full_name}`;
+                
+                // التحقق من صلاحية الهوية
+                const statusBanner = document.getElementById('status-banner');
+                if(data.expiry_date) {
+                    const expiryDate = new Date(data.expiry_date);
+                    const today = new Date();
+                    today.setHours(0,0,0,0); // لضمان المقارنة بالتاريخ فقط دون الوقت
+
+                    document.getElementById('employee-expiry').textContent = data.expiry_date;
+                    document.getElementById('expiry-date-item').style.display = 'flex';
+
+                    if (expiryDate < today) {
+                        statusBanner.innerHTML = `<i class="fas fa-times-circle"></i> الهوية منتهية الصلاحية`;
+                        statusBanner.className = 'expired'; // لإضافة كلاس الستايل
+                    } else {
+                        statusBanner.innerHTML = `<i class="fas fa-check-circle"></i> الهوية سارية المفعول`;
+                        statusBanner.className = 'valid'; // لإضافة كلاس الستايل
+                    }
+                } else {
+                    statusBanner.innerHTML = `<i class="fas fa-check-circle"></i> الهوية سارية المفعول`;
+                    statusBanner.className = 'valid';
+                }
+
+                // إظهار بطاقة الهوية بعد تحميل البيانات
+                loader.style.display = 'none';
+                detailsContainer.style.display = 'block';
+
+            } catch (error) {
+                console.error("Error:", error);
+                loader.innerHTML = `<i class="fas fa-times-circle" style="color:#e74c3c;"></i><p>${error.message}</p>`;
+            }
+        };
+
+        // تشغيل الوظيفة عند تحميل الصفحة
+        window.onload = loadEmployeeData;
+    </script>
+</body>
+</html>

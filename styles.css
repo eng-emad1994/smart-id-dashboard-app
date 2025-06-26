@@ -1,0 +1,51 @@
+/* ======== التصميم النهائي المستقر v15.0 ======== */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root {
+    --primary-color: #007bff; --secondary-color: #6c757d; --dark-blue: #2c3e50;
+    --success-color: #28a745; --danger-color: #dc3545; --bg-color: #f4f7f9;
+    --card-bg: #ffffff; --text-color: #34495e; --border-color: #e9ecef;
+    --shadow-color: rgba(0,0,0,0.05); --navbar-bg: #ffffff; --navbar-text: #2c3e50;
+}
+[data-theme="dark"] {
+    --primary-color: #3498db; --secondary-color: #95a5a6; --success-color: #2ecc71;
+    --danger-color: #e74c3c; --bg-color: #2c3e50; --card-bg: #34495e;
+    --text-color: #ecf0f1; --border-color: #4b6584; --navbar-bg: #2c3e50;
+    --navbar-text: #ecf0f1; --shadow-color: rgba(0,0,0,0.2);
+}
+body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-color); margin: 0; color: var(--text-color); direction: rtl; transition: background-color 0.3s; }
+.navbar { background-color: var(--navbar-bg); color: var(--navbar-text); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px var(--shadow-color); border-bottom: 1px solid var(--border-color); }
+.navbar-left, .navbar-right { display: flex; align-items: center; gap: 20px; }
+.navbar h1 { margin: 0; font-size: 24px; font-weight: 800; } .navbar h1 i { color: var(--primary-color); }
+#theme-switcher { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--secondary-color); padding: 0 10px; }
+#logout-button, .nav-link { background: transparent; color: var(--danger-color); border: 2px solid var(--danger-color); padding: 8px 15px; border-radius: 50px; cursor: pointer; font-family: 'Tajawal'; font-weight: 700; text-decoration: none; }
+#logout-button:hover, .nav-link:hover { background: var(--danger-color); color: white; }
+.nav-link { color: var(--primary-color) !important; border-color: var(--primary-color); }
+.nav-link:hover { color: white !important; background: var(--primary-color); }
+.main-container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+.page-header h1 { font-size: 42px; text-align: center; font-weight: 900; line-height: 1.4; margin-bottom: 40px; } .page-header h1 span { color: var(--primary-color); }
+.dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; }
+@media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
+.dashboard-card { background-color: var(--card-bg); border-radius: 16px; padding: 30px; text-align: center; transition: all 0.3s ease; cursor: pointer; border: 1px solid transparent; }
+.dashboard-card:hover { transform: translateY(-5px); border-color: var(--primary-color); box-shadow: 0 12px 30px rgba(52, 152, 219, 0.1); }
+.dashboard-card .icon { font-size: 48px; color: var(--primary-color); margin-bottom: 20px; height: 60px; }
+.dashboard-card-title { font-size: 18px; font-weight: 700; } .dashboard-card-value { font-size: 28px; font-weight: 800; color: var(--primary-color); margin-top: 8px; }
+.card { background-color: var(--card-bg); border-radius: 12px; box-shadow: 0 5px 15px var(--shadow-color); padding: 25px; margin-top:20px;}
+.card h2 { margin: -25px -25px 25px; padding: 20px 25px; border-bottom: 1px solid var(--border-color); font-size: 20px; display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.table-container { width: 100%; overflow-x: auto; } #employees-table { width: 100%; border-collapse: collapse; }
+#employees-table th, #employees-table td { padding: 15px; text-align: right; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+#employees-table th { background-color: var(--bg-color); font-weight: 800; }
+.employee-photo-thumb { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border:2px solid var(--border-color); cursor:pointer; }
+.action-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-light); } .delete-btn:hover { color: var(--danger-color); }
+.swal2-popup { font-family: 'Tajawal', sans-serif !important; background-color: var(--card-bg) !important; color: var(--text-color) !important; border-radius: 12px !important; }
+.swal-department-list { max-height: 250px; overflow-y: auto; text-align: right; margin-bottom: 20px; padding: 10px; background-color: var(--bg-color); border-radius: 8px; }
+.swal-department-item { padding: 10px; background-color: var(--card-bg); border:1px solid var(--border-color); border-radius: 5px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-weight: 500; cursor: pointer; }
+.swal-delete-btn { background: none; border: none; font-size: 20px; color: var(--danger-color); cursor: pointer; }
+.login-container{display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh} .login-box{background-color:#fff;padding:40px;border-radius:12px;box-shadow:0 5px 25px rgba(0,0,0,0.1);width:100%;max-width:400px;text-align:center} .login-box h2{margin:0 0 10px;font-size:28px;font-weight:800; color:#333} .input-group{margin-bottom:20px;text-align:right} .input-group label{display:block;margin-bottom:8px;font-weight:700;color:#555} .input-group input{width:100%;padding:12px;border:1px solid #dcdcdc;border-radius:6px;box-sizing:border-box;font-size:16px} #login-button{width:100%;padding:12px;border:none;background-color:#007bff;color:white;font-size:16px;font-weight:700;border-radius:6px;cursor:pointer} #feedback-message{min-height:24px;margin-top:15px;font-weight:500;color:var(--danger-color)}
+.credits { text-align: center; padding: 20px; color: var(--text-light); font-size: 14px; opacity: .7; }
+/* Lightbox */
+#lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; animation: lightboxFadeIn 0.3s; }
+#lightbox.show { display: flex; }
+@keyframes lightboxFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.lightbox-content { max-width: 80vw; max-height: 80vh; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: lightboxZoomIn 0.3s; }
+@keyframes lightboxZoomIn { from { transform: scale(0.8); } to { transform: scale(1); } }
+.lightbox .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; text-shadow: 0 0 10px black; }

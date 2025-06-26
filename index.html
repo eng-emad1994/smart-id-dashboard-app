@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - لوحة التحكم</title>
+    <!-- الربط بملف التنسيق الأساسي -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- استدعاء مكتبة Supabase للتواصل مع قاعدة البيانات -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="login-container">
+        <!-- صندوق تسجيل الدخول -->
+        <div class="login-box">
+            <h2>لوحة التحكم</h2>
+            <p>نظام إدارة هويات الموظفين</p>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input type="email" id="email" required autocomplete="username">
+                </div>
+                <div class="input-group">
+                    <label for="password">كلمة المرور</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" id="login-button">تسجيل الدخول</button>
+                <div id="feedback-message"></div>
+            </form>
+        </div>
+        <div class="credits">
+            <p>برمجة وتصميم: م. عماد علي العتابي</p>
+        </div>
+    </div>
+
+    <script>
+        // --- تهيئة الاتصال بـ Supabase (مع بياناتك الصحيحة) ---
+        const SUPABASE_URL = "https://fcqmxsghjzytwewnylye.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcW14c2doanp5dHdld255bHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0ODY5OTcsImV4cCI6MjA2NjA2Mjk5N30.m_2k_35IIz992fb-djoI_0w-ltvUhFOeyB_vyFV-Ui8";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- وظيفة تسجيل الدخول ---
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('login-button');
+            const feedback = document.getElementById('feedback-message');
+            btn.disabled = true;
+            btn.textContent = 'جاري التحقق...';
+            feedback.textContent = '';
+            
+            try {
+                const { error } = await supabase.auth.signInWithPassword({
+                    email: e.target.email.value,
+                    password: e.target.password.value,
+                });
+                if (error) throw error;
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                feedback.textContent = 'البيانات المدخلة غير صحيحة.';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'تسجيل الدخول';
+            }
+        });
+
+        // --- التحقق عند تحميل الصفحة ---
+        (async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                window.location.href = 'dashboard.html';
+            }
+        })();
+    </script>
+</body>
+</html>

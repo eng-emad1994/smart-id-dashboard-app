@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الموظفين</title>
+    <!-- استدعاء الأيقونات والتنسيق -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- شريط التنقل العلوي -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <h1><i class="fas fa-users"></i> إدارة كل الموظفين</h1>
+            <button id="theme-switcher" title="تبديل الثيم"><i class="fas fa-moon"></i></button>
+        </div>
+        <div class="navbar-right">
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-arrow-right"></i> العودة للرئيسية</a>
+        </div>
+    </nav>
+    <div class="main-container">
+        <!-- بطاقة عرض الجدول -->
+        <div class="card">
+             <div style="display:flex; justify-content: space-between; align-items: center; margin: -25px -25px 25px; padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+                <h2><i class="fas fa-list-ul"></i> قائمة جميع الموظفين</h2>
+                <!-- يمكنك إضافة زر "إضافة موظف" هنا إذا أردت، لكننا وضعناه في الرئيسية -->
+             </div>
+            <div class="table-container">
+                <table id="employees-table">
+                    <thead>
+                        <tr>
+                            <th>الصورة</th>
+                            <th>الاسم الكامل</th>
+                            <th>الوظيفة</th>
+                            <th>القسم</th>
+                            <th>الرقم الوظيفي</th>
+                            <th>صلاحية الهوية</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employees-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="credits"><p>برمجة وتصميم: م. عماد علي العتابي</p></div>
+    
+    <!-- استدعاء المكتبات -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        // --- تهيئة الاتصال بـ Supabase ---
+        const SUPABASE_URL = "https://fcqmxsghjzytwewnylye.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcW14c2doanp5dHdld255bHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0ODY5OTcsImV4cCI6MjA2NjA2Mjk5N30.m_2k_35IIz992fb-djoI_0w-ltvUhFOeyB_vyFV-Ui8";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const employeesTbodyEl = document.getElementById('employees-tbody');
+
+        // --- وظائف العرض والتفاعل ---
+        const fetchAllEmployees = async () => {
+            employeesTbodyEl.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></td></tr>`;
+            
+            const { data, error } = await supabase
+                .from('employees')
+                .select(`*, departments ( name )`)
+                .order('created_at', { ascending: false });
+
+            employeesTbodyEl.innerHTML = '';
+            if (error) {
+                console.error(error);
+                employeesTbodyEl.innerHTML = '<tr><td colspan="7" style="text-align:center;">حدث خطأ في جلب البيانات.</td></tr>';
+                return;
+            }
+            if (data.length === 0) {
+                employeesTbodyEl.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا يوجد موظفون مضافون حاليًا.</td></tr>';
+                return;
+            }
+            
+            data.forEach(emp => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><img src="${emp.photo_url || 'https://via.placeholder.com/50'}" class="employee-photo-thumb"></td>
+                    <td>${emp.full_name}</td>
+                    <td>${emp.job_title}</td>
+                    <td>${emp.departments ? emp.departments.name : '-'}</td>
+                    <td>${emp.employee_id || '-'}</td>
+                    <td>${emp.expiry_date || '-'}</td>
+                    <td>
+                        <button class="action-btn delete-btn" data-id="${emp.id}" data-photourl="${emp.photo_url}" title="حذف الموظف">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>`;
+                employeesTbodyEl.appendChild(tr);
+            });
+        };
+        
+        // --- وظيفة حذف الموظف (النهائية والمُصلحة) ---
+        employeesTbodyEl.addEventListener('click', async function(event) {
+            const deleteButton = event.target.closest('.delete-btn');
+            if (deleteButton) {
+                const employeeId = deleteButton.dataset.id;
+                const photoUrl = deleteButton.dataset.photourl;
+
+                const { isConfirmed } = await Swal.fire({
+                    title: 'هل أنت متأكد؟',
+                    text: "سيتم حذف الموظف نهائيًا!",
+                    icon: 'warning',
+                    showCancelButton: true, confirmButtonText: 'نعم, قم بالحذف!', cancelButtonText: 'إلغاء',
+                    confirmButtonColor: '#d33', cancelButtonColor: '#3085d6',
+                });
+                
+                if (isConfirmed) {
+                    try {
+                        const { error } = await supabase.from('employees').delete().eq('id', employeeId);
+                        if (error) throw error;
+                        
+                        if(photoUrl && photoUrl !== 'null' && !photoUrl.includes('placeholder')) {
+                            const photoName = photoUrl.split('/').pop();
+                            await supabase.storage.from('employee-photos').remove([photoName]);
+                        }
+                        Swal.fire('تم الحذف!', 'تم حذف بيانات الموظف بنجاح.', 'success');
+                        await fetchAllEmployees();
+                    } catch(error) { Swal.fire('خطأ!', error.message, 'error'); }
+                }
+            }
+        });
+        
+        // --- تشغيل التطبيق وربط الأحداث ---
+        const themeSwitcher = document.getElementById("theme-switcher");
+        const currentTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", currentTheme);
+        themeSwitcher.innerHTML = `<i class="fas ${currentTheme === 'dark' ? 'fa-sun' : 'fa-moon'}"></i>`;
+        themeSwitcher.addEventListener('click', () => {
+            let newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme); localStorage.setItem('theme', newTheme);
+            themeSwitcher.innerHTML = `<i class="fas ${newTheme === 'dark' ? 'fa-sun' : 'fa-moon'}"></i>`;
+        });
+        
+        (async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                fetchAllEmployees();
+            } else {
+                window.location.href = 'index.html';
+            }
+        })();
+    </script>
+</body>
+</html>
