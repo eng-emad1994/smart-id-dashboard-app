@@ -12,17 +12,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     
     <style>
-        /* ======== تصميم الهوية بأسلوب المشروع الأول (مع الشرارات وعلم العراق) ======== */
+        /* ======== تصميم صفحة الهوية بأسلوب المشروع الأول (مع الشرارات وعلم العراق) ======== */
         :root {
             --spark-color: #ffcc00; /* لون الشرارة الصفراء */
             --primary-accent-color: #0056b3; /* لون أزرق كلون مميز */
-            --text-color: #2c3e50; /* لون النص في الأجزاء الفاتحة */
-            --text-color-muted: #7f8c8d; /* لون النص الخفيف في الأجزاء الفاتحة */
-            --card-bg-body: linear-gradient(145deg, #2c3e50, #1a2533); /* خلفية جسم البطاقة المتدرجة (داكنة) */
-            --body-bg: #1c2025; /* خلفية الصفحة (داكنة) */
-            --header-bg-color: #ffffff; /* لون رأس البطاقة (أبيض) */
-            --header-text-dark: #2c3e50; /* لون النصوص في الرأس الأبيض */
-            --header-text-light: #7f8c8d; /* لون النصوص الخفيفة في الرأس الأبيض */
+            /* ألوان النصوص والخلفيات للجسم الداكن */
+            --text-color: #ecf0f1;
+            --text-color-muted: #95a5a6;
+            --card-bg-body: linear-gradient(145deg, #2c3e50, #1a2533); /* خلفية جسم البطاقة المتدرجة */
+            --body-bg: #1c2025; /* خلفية الصفحة */
+            /* ألوان رأس البطاقة (أبيض) */
+            --header-bg-color: #ffffff;
+            --header-text-dark: #2c3e50;
+            --header-text-light: #7f8c8d;
+            /* ألوان علم العراق الرسمية */
             --iraq-red: #ce1126; --iraq-white: #ffffff; --iraq-black: #000000;
             --success-color: #28a745; --danger-color: #dc3545;
         }
@@ -44,8 +47,8 @@
         /* ===== رأس البطاقة (الآن باللون الأبيض) ===== */
         .card-header { padding: 30px 25px; text-align: center; background-color: var(--header-bg-color); border-bottom: 1px solid #e9ecef; }
         .logos-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .logos-container .side-logo { max-height: 90px; max-width: 150px; object-fit: contain; filter: none; /* إزالة الفلتر لجعل الشعارات بألوانها الأصلية */ }
-        .logos-container .center-gif { max-height: 110px; object-fit: contain; filter: none; /* إزالة الفلتر للـ GIF */ }
+        .logos-container .side-logo { max-height: 90px; max-width: 150px; object-fit: contain; filter: none; }
+        .logos-container .center-gif { max-height: 110px; object-fit: contain; filter: none; }
         .header-text h4 { font-size: 1em; font-weight: 400; color: var(--header-text-light); margin: 4px 0; }
         .header-text h3 { font-size: 1.1em; font-weight: 500; color: var(--header-text-dark); margin: 4px 0; }
         .header-text h2 { font-size: 1.3em; font-weight: 700; color: var(--primary-accent-color); margin: 4px 0; }
@@ -145,7 +148,7 @@
                     <img id="employee-photo" class="employee-photo" src="" alt="صورة الموظف">
                 </div>
                 <h1 id="employee-name" class="employee-name"></h1>
-                <p id="employee-job-title" class="employee-job-title"></p>
+                <p id="employee-job-title" class="employee-title"></p>
                 
                 <div class="info-section">
                     <div class="info-item">
@@ -182,7 +185,7 @@
 
         <footer class="card-footer">
             <p class="contact-info">📞 أرقام الاتصال: [07734037190]</p>
-            <p class="contact-info">📧 البريد الإلكتروني: <a href="mailto:[emada3170@gmail.com]">[emada3170@gmail.com]</a></p>
+            <p class="contact-info">📧 البريد الإلكتروني: <a href="mailto:[ emada3170@gmail.com ]">[emada3170@gmail.com]</a></p>
             <div class="verification-notice">
                 <p>
                     <i class="fa-solid fa-circle-check" style="color: var(--success-color);"></i>
