@@ -13,12 +13,13 @@
     
     <style>
         /* ======== تصميم صفحة الهوية بأسلوب المشروع الأول (مع الشرارات وعلم العراق) ======== */
+        /* ملاحظة: تم تعديل متغيرات الألوان هنا لتكون أكثر وضوحًا */
         :root {
             --spark-color: #ffcc00; /* لون الشرارة الصفراء */
             --primary-accent-color: #0056b3; /* لون أزرق كلون مميز */
             /* ألوان النصوص والخلفيات للجسم الداكن */
-            --text-color: #ecf0f1;
-            --text-color-muted: #95a5a6;
+            --text-color: #ecf0f1; /* لون النص في الأجزاء الداكنة */
+            --text-color-muted: #bdc3c7; /* لون النص الخفيف في الأجزاء الداكنة */
             --card-bg-body: linear-gradient(145deg, #2c3e50, #1a2533); /* خلفية جسم البطاقة المتدرجة */
             --body-bg: #1c2025; /* خلفية الصفحة */
             /* ألوان رأس البطاقة (أبيض) */
@@ -53,8 +54,9 @@
         .header-text h2 { font-size: 1.3em; font-weight: 700; color: var(--primary-accent-color); margin: 4px 0; }
 
         .card-body { padding: 0 30px 30px; text-align: center; } /* جسم البطاقة هو الآن ذو خلفية داكنة */
+        /* Loader and Employee Details containers */
         #loader { font-size: 20px; padding: 40px; text-align: center; color: var(--text-color-muted); }
-        #employee-details { display: none; } /* مخفي حتى يتم تحميل البيانات */
+        #employee-details { display: none; /* مخفي افتراضيًا وسيظهر بالجافاسكربت */ }
         .employee-name { font-size: 2.3em; font-weight: 800; color: #fff; margin: 20px 0 8px 0; text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         .employee-job-title { font-size: 1.3em; color: var(--primary-accent-color); font-weight: 700; margin-bottom: 30px; }
         
@@ -137,12 +139,14 @@
         </header>
 
         <main class="card-body">
+            <!-- Loader (هذا هو العنصر الذي كان مفقودًا) -->
             <div id="loader">
                 <i class="fas fa-spinner fa-spin fa-2x"></i>
                 <p>جاري التحقق من الهوية...</p>
             </div>
 
-            <div id="employee-details">
+            <!-- Employee Details Container (هذا هو العنصر الآخر الذي كان مفقودًا) -->
+            <div id="employee-details" style="display: none;">
                 <div class="employee-photo-wrapper">
                     <img id="employee-photo" class="employee-photo" src="" alt="صورة الموظف">
                 </div>
@@ -183,8 +187,8 @@
         </main>
 
         <footer class="card-footer">
-            <p class="contact-info">📞 أرقام الاتصال: [اكتب الأرقام هنا]</p>
-            <p class="contact-info">📧 البريد الإلكتروني: <a href="mailto:[اكتب الايميل هنا]">[اكتب الايميل هنا]</a></p>
+            <p class="contact-info">📞 أرقام الاتصال: [07734037190]</p>
+            <p class="contact-info">📧 البريد الإلكتروني: <a href="mailto:emada3170@gmail.com">emada3170@gmail.com</a></p>
             <div class="verification-notice">
                 <p>
                     <i class="fa-solid fa-circle-check" style="color: var(--success-color);"></i>
